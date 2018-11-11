@@ -14,11 +14,23 @@ namespace WebApp
     {
         public static void Main(string[] args)
         {
-            CreateWebHostBuilder(args).Build().Run();
+            BuildWebHost(args).Run();
         }
 
-        public static IWebHostBuilder CreateWebHostBuilder(string[] args) =>
-            WebHost.CreateDefaultBuilder(args)
-                .UseStartup<Startup>();
+        public static IWebHost BuildWebHost(string[] args) =>
+            return WebHost.CreateDefaultBuilder()
+                .UseKestrel(options =>
+                {
+                    // Configure the Url and ports to bind to
+                    // This overrides calls to UseUrls and the ASPNETCORE_URLS environment variable, but will be 
+                    // overridden if you call UseIisIntegration() and host behind IIS/IIS Express
+                    options.Listen(IPAddress.Loopback, 5001);
+                    options.Listen(IPAddress.Loopback, 5002, listenOptions =>
+                    {
+                        listenOptions.UseHttps("localhost.pfx", "testpassword");
+                    });
+                })
+                .UseStartup<Startup>()
+                .Build();
     }
 }
